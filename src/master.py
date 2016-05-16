@@ -33,7 +33,7 @@ class master():
             try:
                 client, address = self._server.accept()#建立连接
                 client.setblocking(0)
-                self._logger.info("player from %s:%d" % address)
+                self._logger.info("connection from %s:%d" % address)
                 min_payload, min_payload_worker = self._workers[0].payload(), self._workers[0]
                 for w in self._workers:
                     pl = w.payload()

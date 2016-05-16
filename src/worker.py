@@ -4,7 +4,7 @@ import select
 import socket
 import multiprocessing
 import logging
-import player
+import connection
 import handler
 
 class worker(threading.Thread):
@@ -35,7 +35,7 @@ class worker(threading.Thread):
     def _add_scoket(self, socket):
         self._lock.acquire()
         if socket not in self._conn_sockets:
-            conn = player.connection(socket, handler.handler())
+            conn = connection.connection(socket, handler.handler())
             self._conn_sockets[socket] = conn
         self._lock.release()
         

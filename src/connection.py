@@ -2,9 +2,11 @@
 import handler
 import time
 import packer
+import gameobject
 
 CONNECTED = 0
 LOGIN = 1
+GAME = 2
 class connection:
     """连接类，管理用户的信息以及缓存数据及发送消息"""
     def __init__(self, socket = None, handler = None):
@@ -12,7 +14,10 @@ class connection:
         self.address = socket.getpeername()
         self.__state = CONNECTED
         self.__loginTime = 0
-        self.userid = ''
+        self.player = gameobject.player()
+        self.spiders = {}
+        self.meches = {}
+        self.__idofenemies = 0;
         self.__waitToRead = 0
         self.__input = ''
         self.totalOnlineTime = 0
@@ -24,7 +29,8 @@ class connection:
             data = self.read()
             while data:
                 res = self.handler.handle(self, data)
-                self.socket.sendall(res)
+                if res:
+                    self.socket.sendall(res)
                 data = self.read()
         else:
             raise TypeError("The handler must be type of handler!")
@@ -32,11 +38,20 @@ class connection:
     def isLogin(self):
         return self.__state == LOGIN
     
+    def nextEnemyId(self):
+        while (self.spiders.has_key(self.__idofenemies) or self.meches.has_key(self.__idofenemies)):
+            self.__idofenemies += 1
+        return self.__idofenemies
+    
     def login(self, userid, totalOnlineTime):
         self.__state = LOGIN
         self.__loginTime = int(time.time())
-        self.userid = userid
+        self.player.userid = userid
         self.totalOnlineTime = totalOnlineTime
+    
+    def enter(self, roleid):
+        self.__state = GAME
+        self.player.roleid = roleid
         
     def onlineTime(self):
         return int(time.time()) - self.__loginTime
