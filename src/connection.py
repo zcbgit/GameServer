@@ -3,6 +3,7 @@ import handler
 import time
 import packer
 import gameobject
+import sencemap
 
 CONNECTED = 0
 LOGIN = 1
@@ -17,6 +18,8 @@ class connection:
         self.player = gameobject.player()
         self.spiders = {}
         self.meches = {}
+        self.numofequipment = 0
+        self.preEquipmentTime = 0.0
         self.__idofenemies = 0;
         self.__waitToRead = 0
         self.__input = ''
@@ -51,7 +54,7 @@ class connection:
     
     def enter(self, roleid):
         self.__state = GAME
-        self.player.roleid = roleid
+        return self.player.select_role(roleid)
         
     def onlineTime(self):
         return int(time.time()) - self.__loginTime

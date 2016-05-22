@@ -23,7 +23,7 @@ def init_database(dbFile):
     try:
         sql = 'create table if not exists userInfo (userid varchar(128) primary key, password varchar(128) not null, role1 varchar(128), role2 varchar(128), role3 varchar(128), onlinetime integer default 0)'
         db.execDB(sql)
-        sql = 'create table if not exists roleInfo (roleid integer primary key autoincrement, name varchar(128), level integer default 1, blood integer default 100, armor integer default 0, weapon varchar(128), attack integer default 1, ammunition integer default -1)'
+        sql = 'create table if not exists roleInfo (roleid integer primary key autoincrement, name varchar(128), level integer default 1, HP integer default 100, EXP integer default 0, NextLevelExp integer default 100, weapon varchar(128), attack integer default 1, ammunition integer default -1)'
         db.execDB(sql)
     except sqlite3.Error:
         _logger.error("Initialise database[%s] failed! SQL[%s]"%(dbFile, sql))
@@ -41,6 +41,7 @@ if __name__ == '__main__':
     init_database(db_file)
     ip, port, workers, path = cf.get('server', 'ip'), cf.getint('server', 'port'), cf.getint('server', 'workers'), cf.get('server', 'senec_map_file')
     sencemap.file_to_map(path)
+    _logger.info("Initialized map!")
     server = master.master(workers)
     server.init(ip, port)
     server.run()

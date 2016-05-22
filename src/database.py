@@ -37,7 +37,7 @@ class DBDriver:
             DBDriver.lock.release()
     
     def update(self, tableName, values, condictions):
-        sql = 'update %s set %s where %s'%(tableName, ', '.join(values), ', '.join(condictions))
+        sql = 'update %s set %s where %s'%(tableName, ', '.join(values), ' and '.join(condictions))
         DBDriver.lock.acquire()
         try:
             self.__cursor.execute(sql)

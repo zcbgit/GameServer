@@ -1,8 +1,6 @@
 # -*- coding: gbk -*-
 import math
-import logging.config
 import random
-_logger = logging.getLogger('server')
 #地图
 tm = [
 '111111111111111111111111111111111111111111111111111111111111',
@@ -71,12 +69,8 @@ class Node_Elem:
         return self.F
             
 class A_Star:
-    def __init__(self, s_x, s_y, e_x, e_y, width=60, height=30):
-        self.s_x = s_x
-        self.s_y = s_y
-        self.e_x = e_x
-        self.e_y = e_y
-        
+    global map_col, map_row
+    def __init__(self, width=60, height=30):
         self.width = width
         self.height = height
         
@@ -85,21 +79,26 @@ class A_Star:
         self.path = []
         
     #查找路径的入口函数
-    def find_path(self):
+    def find_path(self, s_x, s_y, e_x, e_y):
+        self.e_x, self.e_y = e_x, e_y
+        self.open = {}
+        self.close = {}
+        self.path = []
+        
         #构建开始节点
-        node = Node_Elem(None, self.s_x, self.s_y)
+        node = Node_Elem(None, s_x, s_y)
         while True:
             #扩展F值最小的节点
             self.extend_round(node)
             #如果开放列表为空，则不存在路径，返回
             if not self.open:
-                return
+                return None
             #获取F值最小的节点
             node = self.get_best()
             #找到路径，生成路径，返回
-            if node.x == self.e_x and node.y == self.e_y:
+            if node.x == e_x and node.y == e_y:
                 self.make_path(node)
-                return
+                return self.path
             #把此节点压入关闭列表，并从开放列表里删除
             self.close[(node.x, node.y)] = node
             del self.open[(node.x, node.y)]
@@ -173,7 +172,7 @@ def get_symbol_XY(s):
         else:
             break
     return x, y
-        
+
 def mark_path(l):
     mark_symbol(l, '*')
     
@@ -202,13 +201,18 @@ def file_to_map(path):
             map_col = len(lines[0]) - 1
         for line in lines:
             sence_map.append(list(line[:-1]))
+
+def distance(v1, v2):
+    d = 0
+    for a, b in zip(v1, v2):
+        d += (a - b) ** 2
     
-    _logger.info("Initialize map finished!")
+    return d ** 0.5
 
 def get_valid_position():
     x, z = -1, -1
     global map_row, map_col, sence_map
-    while x < 0 or z < 0 or sence_map[z][x] == '1':
+    while x < 0 or z < 0 or sence_map[z][x] != '0':
         x, z = random.randrange(0, map_col), random.randrange(0, map_row)
     
     x, z = x - map_col / 2.0 + 0.5, z - map_row / 2.0 + 0.5
@@ -217,10 +221,9 @@ def get_valid_position():
 def find_path():
     s_x, s_y = get_start_XY()
     e_x, e_y = get_end_XY()
-    a_star = A_Star(s_x, s_y, e_x, e_y)
-    a_star.find_path()
+    a_star = A_Star(60, 30)
+    path = a_star.find_path(s_x, s_y, e_x, e_y)
     searched = a_star.get_searched()
-    path = a_star.path
     #标记已搜索区域
     mark_searched(searched)
     #标记路径
@@ -229,9 +232,22 @@ def find_path():
     print "searched squares count is %d"%(len(searched))
     #标记开始、结束点
     mark_start_end(s_x, s_y, e_x, e_y)
+    print_test_map()
+    
+    
+    path = a_star.find_path(1, s_y, e_x, e_y)
+    searched = a_star.get_searched()
+    #标记已搜索区域
+    mark_searched(searched)
+    #标记路径
+    mark_path(path)
+    print "path length is %d"%(len(path))
+    print "searched squares count is %d"%(len(searched))
+    #标记开始、结束点
+    mark_start_end(1, s_y, e_x, e_y)
+    print_test_map()
     
 if __name__ == "__main__":
     #把字符串转成列表
     tm_to_test_map()
     find_path()
-    print_test_map()
