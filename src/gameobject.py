@@ -10,7 +10,7 @@ class enemy:
         self.pather = sencemap.A_Star(sencemap.map_col, sencemap.map_row)
     
     def Plan_Path(self, play_position):
-        if sencemap.distance(self.position, play_position) < 15.0:
+        if 10.0 < sencemap.distance(self.position, play_position) < 25.0:
             path = self.pather.find_path(
                                          int(self.position[0] + sencemap.map_col / 2.0), 
                                          int(self.position[1] + sencemap.map_row / 2.0), 

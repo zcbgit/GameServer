@@ -98,6 +98,8 @@ class A_Star:
             #找到路径，生成路径，返回
             if node.x == e_x and node.y == e_y:
                 self.make_path(node)
+                if self.path:
+                    self.path.reverse()
                 return self.path
             #把此节点压入关闭列表，并从开放列表里删除
             self.close[(node.x, node.y)] = node

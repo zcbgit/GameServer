@@ -264,12 +264,12 @@ def CreateEnemy(conn):
     if (not conn):
         return
     data = []
-    while len(conn.spiders) < 5:
+    while len(conn.spiders) < 1:
         spider = gameobject.enemy(conn.nextEnemyId(), 'spider', 100)
         conn.spiders[spider.id] = spider
         data.append({'id' : spider.id, 'type' : 0, 'HP' : spider.HP, 'x' : spider.position[0], 'z' : spider.position[1]})
     
-    while len(conn.meches) < 2:
+    while len(conn.meches) < 1:
         mech = gameobject.enemy(conn.nextEnemyId(), 'mech', 150)
         conn.meches[mech.id] = mech
         data.append({'id' : mech.id, 'type' : 1, 'HP' : mech.HP, 'x' : mech.position[0], 'z' : mech.position[1]})
@@ -308,6 +308,7 @@ def EnemyData(conn, data):
         res = respone(code, msg, 'EnemyData')
         _logger.error("EnemyData error. errcode[%d],errmsg[%s]" %(code, msg))
     else:
+        res = None
         if objs[0] == 0:
             enemies = conn.spiders
         elif objs[0] == 1:
@@ -320,9 +321,8 @@ def EnemyData(conn, data):
             #enemy.HP = objs[2]
             if (enemy):
                 enemy.position = (objs[2], objs[3])
-        
-        path = enemy.Plan_Path(conn.player.position)
-        res = updatePath(enemyId, path)
+                path = enemy.Plan_Path(conn.player.position)
+                return updatePath(enemyId, path)
              
     return res
 
@@ -347,7 +347,7 @@ def PlayerData(conn, data):
     else:
         conn.player.position = (objs[0], objs[1])
         t = time.time()
-        if int(t) % 10 == 0: # 每10s刷新一次怪
+        if int(t) % 5 == 0: # 每10s刷新一次怪
             r1 = CreateEnemy(conn)
         else:
             r1 = None
@@ -407,6 +407,8 @@ def Damage(conn, data):
         res = respone(code, msg, 'Damage')
         _logger.error("Create role error. errcode[%d],errmsg[%s]" %(code, msg))
     else:
+        res = None
+        
         if (type == 0):
             damage = 10
         elif (type == 1):
@@ -435,8 +437,7 @@ def Damage(conn, data):
                     del conn.meches[oid]
                     conn.player.role.EXP += 20
                     res += LevelUp(conn)
-        else:
-            res = None
+
     return res
 
 def GetEquipment(conn, data):
