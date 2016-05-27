@@ -3,7 +3,6 @@ import handler
 import time
 import packer
 import gameobject
-import sencemap
 
 CONNECTED = 0
 LOGIN = 1
@@ -66,6 +65,9 @@ class connection:
         self.__input = ''
         self.__waitToRead = 0
     
+    def send(self, data):
+        if (data):
+            self.socket.sendall(data)
     #返回一个完整的消息，如果缓存的数据不完整则返回None
     def read(self):
         if not self.__waitToRead:  

@@ -39,7 +39,7 @@ if __name__ == '__main__':
     cf.read("settings.ini")
     db_file = cf.get('database', 'db_file')
     init_database(db_file)
-    ip, port, workers, path = cf.get('server', 'ip'), cf.getint('server', 'port'), cf.getint('server', 'workers'), cf.get('server', 'senec_map_file')
+    ip, port, workers, path = cf.get('server', 'ip'), cf.getint('server', 'port'), cf.getint('server', 'workers'), cf.get('server', 'scene_map_file')
     sencemap.file_to_map(path)
     _logger.info("Initialized map!")
     server = master.master(workers)

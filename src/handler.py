@@ -1,6 +1,7 @@
 # -*- coding: gbk -*-
 import logging
 import multiprocessing
+import threading
 import sqlite3
 import time
 import traceback
@@ -9,6 +10,7 @@ import gameobject
 import database
 import errcode
 import packer
+import sencemap
 
 CONNECTED = 0
 LOGIN = 1
@@ -264,12 +266,12 @@ def CreateEnemy(conn):
     if (not conn):
         return
     data = []
-    while len(conn.spiders) < 1:
+    while len(conn.spiders) < 10:
         spider = gameobject.enemy(conn.nextEnemyId(), 'spider', 100)
         conn.spiders[spider.id] = spider
         data.append({'id' : spider.id, 'type' : 0, 'HP' : spider.HP, 'x' : spider.position[0], 'z' : spider.position[1]})
     
-    while len(conn.meches) < 1:
+    while len(conn.meches) < 4:
         mech = gameobject.enemy(conn.nextEnemyId(), 'mech', 150)
         conn.meches[mech.id] = mech
         data.append({'id' : mech.id, 'type' : 1, 'HP' : mech.HP, 'x' : mech.position[0], 'z' : mech.position[1]})
@@ -300,29 +302,50 @@ def EnterGame(conn, data):
             _logger.error("EnterGame error. errcode[%d],errmsg[%s]" %(code, msg))
     return res
 
+def asynPathPlan(enemy, conn):
+    enemyPos = (int(enemy.position[0] + sencemap.map_col / 2.0), 
+                int(enemy.position[1] + sencemap.map_row / 2.0))
+    playerPos = (int(conn.player.position[0] + sencemap.map_col / 2.0), 
+                 int(conn.player.position[1] + sencemap.map_row / 2.0))
+    if not (enemy.preEnemyPos == enemyPos) or not (enemy.prePlayerPos == playerPos):
+        enemy.preEnemyPos, enemy.prePlayerPos = enemyPos, playerPos
+        planner = sencemap.A_Star(sencemap.map_col, sencemap.map_row)
+        path =planner.find_path(enemyPos[0], enemyPos[1], playerPos[0], playerPos[1])
+        if path:
+            res = []
+            for x, z in path:
+                res.append((x - sencemap.map_col / 2.0 + 0.5, z - sencemap.map_row / 2.0 + 0.5))
+            
+            conn.send(updatePath(enemy.id, res))
+    
 def EnemyData(conn, data):
-    userId, objs = data.get('userId', None), data.get('data', None)
-    if (userId == None or objs == None):
+    userData, enemyData = data.get('playerData', None), data.get('enemyData', None)
+    if (userData == None or enemyData == None):
         code = errcode.MISSING_ARGUMENT
-        msg = errcode.ERROR_MSG[code] % ('userId, role, data')
+        msg = errcode.ERROR_MSG[code] % ('userData, enemyData')
         res = respone(code, msg, 'EnemyData')
         _logger.error("EnemyData error. errcode[%d],errmsg[%s]" %(code, msg))
     else:
         res = None
-        if objs[0] == 0:
+        conn.player.position = (userData[0], userData[1])
+        if enemyData[0] == 0:
             enemies = conn.spiders
-        elif objs[0] == 1:
+        elif enemyData[0] == 1:
             enemies = conn.meches
         else:
             enemies = None
         if enemies:
-            enemyId = int(objs[1])
+            enemyId = int(enemyData[1])
             enemy = enemies.get(enemyId, None)
             #enemy.HP = objs[2]
             if (enemy):
-                enemy.position = (objs[2], objs[3])
-                path = enemy.Plan_Path(conn.player.position)
-                return updatePath(enemyId, path)
+                enemy.position = (enemyData[2], enemyData[3])
+                if 10.0 < sencemap.distance(enemy.position, conn.player.position) < 25.0:
+                    t = threading.Thread(target=asynPathPlan,args=(enemy, conn))
+                    t.setDaemon(True)
+                    t.start()
+                #path = enemy.Plan_Path(conn.player.position)
+                #return updatePath(enemyId, path)
              
     return res
 
@@ -346,12 +369,8 @@ def PlayerData(conn, data):
         _logger.error("PlayerData error. errcode[%d],errmsg[%s]" %(code, msg))
     else:
         conn.player.position = (objs[0], objs[1])
+        r1 = CreateEnemy(conn)
         t = time.time()
-        if int(t) % 5 == 0: # 每10s刷新一次怪
-            r1 = CreateEnemy(conn)
-        else:
-            r1 = None
-        #print (t, conn.preEquipmentTime + 300)
         if conn.preEquipmentTime == 0.0 or t > conn.preEquipmentTime + 300: # 每300s刷新一次箱子
             r2 = CreateEquipment(conn)
             conn.preEquipmentTime = t
@@ -470,7 +489,7 @@ class handler():
     
     def handle(self, conn, data):
         if conn and data:
-            #_logger.debug("Recvive message from (%s:%d). data: %s" %(conn.address[0], conn.address[1], data))
+            _logger.debug("Recvive message from (%s:%d). data: %s" %(conn.address[0], conn.address[1], data))
             try:
                 msg = packer.json2dict(data)
                 msgName = msg['msgname']

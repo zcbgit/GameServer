@@ -7,20 +7,8 @@ class enemy:
         self.type = t
         self.HP = HP
         self.position = sencemap.get_valid_position()
-        self.pather = sencemap.A_Star(sencemap.map_col, sencemap.map_row)
-    
-    def Plan_Path(self, play_position):
-        if 10.0 < sencemap.distance(self.position, play_position) < 25.0:
-            path = self.pather.find_path(
-                                         int(self.position[0] + sencemap.map_col / 2.0), 
-                                         int(self.position[1] + sencemap.map_row / 2.0), 
-                                         int(play_position[0] + sencemap.map_col / 2.0), 
-                                         int(play_position[1] + sencemap.map_row / 2.0))
-            if path:
-                res = []
-                for x, z in path:
-                    res.append((x - sencemap.map_col / 2.0 + 0.5, z - sencemap.map_row / 2.0 + 0.5))
-                return res
+        self.preEnemyPos = None
+        self.prePlayerPos = None
         
 class equipment:
     def __init__(self):
