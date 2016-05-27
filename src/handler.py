@@ -267,12 +267,12 @@ def CreateEnemy(conn):
         return
     data = []
     while len(conn.spiders) < 10:
-        spider = gameobject.enemy(conn.nextEnemyId(), 'spider', 100)
+        spider = gameobject.enemy(conn.nextEnemyId(), 'spider', 200)
         conn.spiders[spider.id] = spider
         data.append({'id' : spider.id, 'type' : 0, 'HP' : spider.HP, 'x' : spider.position[0], 'z' : spider.position[1]})
     
     while len(conn.meches) < 4:
-        mech = gameobject.enemy(conn.nextEnemyId(), 'mech', 150)
+        mech = gameobject.enemy(conn.nextEnemyId(), 'mech', 300)
         conn.meches[mech.id] = mech
         data.append({'id' : mech.id, 'type' : 1, 'HP' : mech.HP, 'x' : mech.position[0], 'z' : mech.position[1]})
     

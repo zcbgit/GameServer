@@ -14,16 +14,11 @@ class connection:
         self.address = socket.getpeername()
         self.__state = CONNECTED
         self.__loginTime = 0
-        self.player = gameobject.player()
-        self.spiders = {}
-        self.meches = {}
-        self.numofequipment = 0
-        self.preEquipmentTime = 0.0
+        self.totalOnlineTime = 0
+        self.handler = handler
         self.__idofenemies = 0;
         self.__waitToRead = 0
         self.__input = ''
-        self.totalOnlineTime = 0
-        self.handler = handler
         
     def handle(self, data):
         if isinstance(self.handler, handler.handler):
@@ -48,7 +43,15 @@ class connection:
     def login(self, userid, totalOnlineTime):
         self.__state = LOGIN
         self.__loginTime = int(time.time())
+        self.player = gameobject.player()
         self.player.userid = userid
+        self.spiders = {}
+        self.meches = {}
+        self.numofequipment = 0
+        self.preEquipmentTime = 0.0
+        self.__idofenemies = 0;
+        self.__waitToRead = 0
+        self.__input = ''
         self.totalOnlineTime = totalOnlineTime
     
     def enter(self, roleid):
