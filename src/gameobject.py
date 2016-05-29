@@ -1,12 +1,13 @@
 # -*- coding: gbk -*-
 import sencemap
-
+# 用户管理对象
 class enemy:
     def __init__(self, i, t, HP):
         self.id = i
         self.type = t
         self.HP = HP
         self.position = sencemap.get_valid_position()
+        # 记录上一次怪物及玩家的位置，以决定是否重新进行路径规划
         self.preEnemyPos = None
         self.prePlayerPos = None
         

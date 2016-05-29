@@ -45,10 +45,6 @@ class connection:
         self.__loginTime = int(time.time())
         self.player = gameobject.player()
         self.player.userid = userid
-        self.spiders = {}
-        self.meches = {}
-        self.numofequipment = 0
-        self.preEquipmentTime = 0.0
         self.__idofenemies = 0;
         self.__waitToRead = 0
         self.__input = ''
@@ -56,6 +52,10 @@ class connection:
     
     def enter(self, roleid):
         self.__state = GAME
+        self.spiders = {}
+        self.meches = {}
+        self.numofequipment = 0
+        self.preEquipmentTime = 0.0
         return self.player.select_role(roleid)
         
     def onlineTime(self):

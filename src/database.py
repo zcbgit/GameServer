@@ -7,8 +7,6 @@ import multiprocessing
 _logger = logging.getLogger('dblog')
 _dbconnector = None
 
-
-
 class DBDriver:
     lock = multiprocessing.Lock()
     def __init__(self, dbFile):
